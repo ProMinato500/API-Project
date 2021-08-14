@@ -249,6 +249,99 @@ booky.post("/publication/new", (req,res) => {
   return res.json(database.publication);
 });
 
+
+/*
+Route           book/update
+Description     Update book on isbn
+Access          PUBLIC
+Parameter       isbn
+Methods         PUT
+*/
+booky.put("/book/update/:isbn",async (req,res) => {
+    const updatedBook = await BookModel.findOneAndUpdate(
+        {
+            ISBN: req.params.isbn
+        },
+        {
+            title: req.body.bookTitle
+        },
+        {
+            new: true
+        }
+    );
+    return res.json({books: updatedBook});
+});
+
+/*
+Route           book/author/update
+Description     Add/Update author on isbn
+Access          PUBLIC
+Parameter       isbn
+Methods         PUT
+*/
+booky.put("/book/author/update/:isbn", async(req,res) => {
+    const updatedBook = await BookModel.findOneAndUpdate(
+        {
+            ISBN: req.params.isbn
+        },
+        {
+            $addToSet: {
+                authors: req.body.newAuthor
+            }
+        },
+        {
+            new: true
+        }
+    );
+    const updatedAuthor = await AuthorModel.findOneAndUpdate(
+        {
+            id: req.body.newAuthor
+        },
+        {
+            $addToSet: {
+                books: req.params.isbn
+            }
+        },
+        {
+            new: true
+        }
+    );
+    return res.json({
+        books: updatedBook,
+        authors: updatedAuthor,
+        message: "New author was added"
+    })
+}
+);
+
+/*
+Route           book/delete
+Description     Add/Update author on isbn
+Access          PUBLIC
+Parameter       isbn
+Methods         DELETE
+*/
+booky.delete("/book/delete/:isbn",async(req,res) => {
+    const updatedBookDatabase = await BookModel.findOneAndDelete(
+        {
+            ISBN: req.params.isbn
+        }
+    );
+
+    return res.json(
+        {
+            books: updatedBookDatabase
+        }
+    );
+});
+
+
+
+
+
+
+
+
 /*
 Route           /publication/update/book
 Description     Update/Add new publications
